@@ -10,12 +10,71 @@ class Point:
         self.x = x
         self.y = y
 
-    def print(self):
-        print(self.x, self.y)
-
     def EuclideanDistance(self, p):
         return math.sqrt((p.x - self.x) * (p.x - self.x) +
                          (p.y - self.y) * (p.y - self.y))
+
+    def isSame(self, point):
+        return self.x == point.x and self.y == point.y
+
+
+# PointMore object not only show where in the mao
+# but also show its parent, its cost
+class PointMore:
+    def __init__(self, point):
+        self.point = point
+        self.parent = None
+        self.cost = 0
+
+    def setParent(self, parent):
+        self.parent = parent
+
+    def setCost(self, cost):
+        self.cost = cost
+
+    def addCost(self, moreCost):
+        self.cost += moreCost
+
+    def print(self):
+        print(self.point.x, self.point.y, self.cost)
+
+
+# PriorityQueue object for store PointMore
+# lower cost mean higher priority to be pulled out
+class PriorityQueue:
+    def __init__(self):
+        self.data = []
+
+    def print(self):
+        for i in self.data:
+            i.print()
+
+    def isEmpty(self):
+        # empty sequences are false
+        return not self.data
+
+    def add(self, newPointMore):
+        # only add new PointMore if not exist in data
+        # if exist, only replace of new PointMore has lower cost
+        exist = False
+        for pointMore in self.data:
+            if pointMore.point.isSame(newPointMore.point):
+                exist = True
+                if pointMore.cost > newPointMore.cost:
+                    pointMore.setCost(newPointMore.cost)
+                break
+        if not exist:
+            self.data.append(newPointMore)
+
+    def pullLowest(self):
+        if self.isEmpty():
+            return
+        # find PointMore which has lowest cost to be pulled
+        lowestCostIndex = 0
+        for i in range(1, len(self.data)):
+            if self.data[i].cost < self.data[lowestCostIndex].cost:
+                lowestCostIndex = i
+        return self.data.pop(lowestCostIndex)
 
 
 class PathProblem:
@@ -47,8 +106,8 @@ class PathProblem:
 
     def print(self):
         print(self.size)
-        self.startPoint.print()
-        self.goalPoint.print()
+        print(self.startPoint.x, self.startPoint.y)
+        print(self.goalPoint.x, self.goalPoint.y)
 
         for row in self.pathMap:
             for num in row:
@@ -82,7 +141,6 @@ def main():
         f_in.close()
 
     pathProblem = PathProblem(f_in)
-    pathProblem.print()
 
     # must close file after return
     f_in.close()
