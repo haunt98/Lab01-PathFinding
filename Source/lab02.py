@@ -6,16 +6,16 @@ import math
 
 # Point object to show where in the map
 class Point:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
+    def __init__(self, row, col):
+        self.row = row
+        self.col = col
 
-    def EuclideanDistance(self, p):
-        return math.sqrt((p.x - self.x) * (p.x - self.x) +
-                         (p.y - self.y) * (p.y - self.y))
+    def EuclideanDistance(self, point):
+        return math.sqrt((point.row - self.row) * (point.row - self.row) +
+                         (point.col - self.col) * (point.col - self.col))
 
     def isSame(self, point):
-        return self.x == point.x and self.y == point.y
+        return self.row == point.row and self.col == point.col
 
 
 # PointMore object not only show where in the mao
@@ -36,7 +36,7 @@ class PointMore:
         self.cost += moreCost
 
     def print(self):
-        print(self.point.x, self.point.y, self.cost)
+        print(self.point.row, self.point.col, self.cost)
 
 
 # PriorityQueue object for store PointMore
@@ -77,43 +77,113 @@ class PriorityQueue:
         return self.data.pop(lowestCostIndex)
 
 
-class PathProblem:
-    # get value from file
-    # size
-    # start_x start_y
-    # goal_x goal_y
-    # ...
-    def __init__(self, f):
-        # split for line to split to word
-        self.size = int(f.readline())
-
-        startPointData = f.readline().split()
-        x = int(startPointData[0])
-        y = int(startPointData[1])
-        self.startPoint = Point(x, y)
-
-        goalPointData = f.readline().split()
-        x = int(goalPointData[0])
-        y = int(goalPointData[1])
-        self.goalPoint = Point(x, y)
-
-        self.pathMap = []
+class PathMap:
+    # Example
+    # 1 0 0
+    # 0 1 0
+    # 0 1 0
+    # 1 is obstacle, 0 is not
+    def __init__(self, f, size):
+        self.size = size
+        self.data = []
         for line in f:
             row = []
             for word in line.split():
                 row.append(int(word))
-            self.pathMap.append(row)
+            self.data.append(row)
 
-    def print(self):
+    def printSize(self):
         print(self.size)
-        print(self.startPoint.x, self.startPoint.y)
-        print(self.goalPoint.x, self.goalPoint.y)
 
-        for row in self.pathMap:
+    def printMap(self):
+        for row in self.data:
             for num in row:
                 print(num, end=' ')
             # print() itself will print new line
             print()
+
+    # check if size and data read from file is equal
+    def isValid(self):
+        if len(self.data) != self.size:
+            return False
+        for row in self.data:
+            if len(row) != self.size:
+                return False
+        return True
+
+    # return true if point in map and not obstacle
+    # otherwise return false
+    def isMovablePoint(self, point):
+        # check if point in map
+        if point.row < 0 or point.row >= self.size or point.col < 0 or point.col >= self.size:
+            return False
+        # check if point is obstacle
+        if self.data[point.row][point.col] == 1:
+            return False
+        return True
+
+    # next move of p is point 1 -> 8
+    # valid move if next point is in map and not obstacle
+    # return list of valid next move
+    # 1 2 3
+    # 8 p 4
+    # 7 6 5
+    def nextMove(self, point):
+        listNextMove = []
+        # 1 2 3
+        if self.isMovablePoint(Point(point.row - 1, point.col - 1)):
+            listNextMove.append(Point(point.row - 1, point.col - 1))
+        if self.isMovablePoint(Point(point.row - 1, point.col)):
+            listNextMove.append(Point(point.row - 1, point.col))
+        if self.isMovablePoint(Point(point.row - 1, point.col + 1)):
+            listNextMove.append(Point(point.row - 1, point.col + 1))
+        # 4
+        if self.isMovablePoint(Point(point.row, point.col + 1)):
+            listNextMove.append(Point(point.row, point.col + 1))
+        # 5 6 7
+        if self.isMovablePoint(Point(point.row + 1, point.col + 1)):
+            listNextMove.append(Point(point.row + 1, point.col + 1))
+        if self.isMovablePoint(Point(point.row + 1, point.col)):
+            listNextMove.append(Point(point.row + 1, point.col))
+        if self.isMovablePoint(Point(point.row + 1, point.col - 1)):
+            listNextMove.append(Point(point.row + 1, point.col - 1))
+        # 8
+        if self.isMovablePoint(Point(point.row, point.col - 1)):
+            listNextMove.append(Point(point.row, point.col - 1))
+        return listNextMove
+
+    def printNextMove(self, point):
+        for move in self.nextMove(point):
+            print(move.row, move.col)
+
+
+class PathProblem:
+    # get value from file
+    # size
+    # start_row,start_col
+    # goal_row,goal_col
+    # ...
+    def __init__(self, f):
+        # split for line to split to word
+        size = int(f.readline())
+
+        startPointData = f.readline().split(',')
+        x = int(startPointData[0])
+        y = int(startPointData[1])
+        self.startPoint = Point(x, y)
+
+        goalPointData = f.readline().split(',')
+        x = int(goalPointData[0])
+        y = int(goalPointData[1])
+        self.goalPoint = Point(x, y)
+
+        self.pathMap = PathMap(f, size)
+
+    def print(self):
+        self.pathMap.printSize()
+        print(self.startPoint.row, self.startPoint.col)
+        print(self.goalPoint.row, self.goalPoint.col)
+        self.pathMap.printMap()
 
 
 # return file if open success
