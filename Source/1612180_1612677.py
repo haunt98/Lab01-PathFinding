@@ -213,8 +213,8 @@ class FindingPathProblem:
     def isValid(self):
         if not self.pathMap.isValid():
             return False
-        if not self.pathMap.isValidPoint(
-                self.startPoint) or not self.pathMap.isValidPoint(
+        if not self.pathMap.isObstaclePoint(
+                self.startPoint) or not self.pathMap.isObstaclePoint(
                     self.goalPoint):
             return False
         return True
@@ -225,10 +225,7 @@ class FindingPathProblem:
     def solveAStar(self):
         # check path map again for size
         if not self.isValid():
-            print(
-                'Input path map wrong size or start, goal point wrong position'
-            )
-            return
+            return None
 
         # init closeList and openList
         closeList = AStarList()
