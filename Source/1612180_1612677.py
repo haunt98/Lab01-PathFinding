@@ -255,6 +255,9 @@ class FindingPathProblem:
                 else:
                     openList.replace(nextPoint)
 
+        # no solution found
+        return None
+
     def getSolutionPath(self, goalPoint):
         solutionPath = []
         if goalPoint == None:
