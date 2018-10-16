@@ -258,6 +258,10 @@ class FindingPathProblem:
         # no solution found
         return None
 
+    # Trace solution path follow from goalPoint
+    # which parent of goalPoint
+    # which parent of parent of goalPoint
+    # ... whatever
     def getSolutionPath(self, goalPoint):
         solutionPath = []
         if goalPoint == None:
@@ -269,6 +273,8 @@ class FindingPathProblem:
         solutionPath.insert(0, p)
         return solutionPath
 
+    # write a solution to a file
+    # -1 if no slution
     def solution(self, f):
         goalPoint = self.solveAStar()
         if goalPoint == None:
