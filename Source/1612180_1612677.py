@@ -1,4 +1,5 @@
 # TODO write test, more test !!
+# TODO write a log
 
 # for arguments
 import sys
@@ -49,11 +50,11 @@ class AStarList:
 
     # only replace if replacePoint has lower cost()
     def replace(self, replacePoint):
-        for point in self.data:
-            if point.isSamePos(replacePoint):
-                if point.cost > replacePoint.cost:
-                    point.cost = replacePoint.cost
-                    point.parent = replacePoint.parent
+        for i in range(0, len(self.data)):
+            if self.data[i].isSamePos(replacePoint):
+                if self.data[i].cost > replacePoint.cost:
+                    self.data[i].cost = replacePoint.cost
+                    self.data[i].parent = replacePoint.parent
                 break
 
     # return Point with lowest f()
@@ -101,7 +102,7 @@ class PathMap:
             # print() itself will print new line
             print()
 
-    # check if size and data read from file is equal
+    # check if pathMap is correct size
     def isValid(self):
         if len(self.data) != self.size:
             return False
@@ -120,6 +121,7 @@ class PathMap:
     def isObstaclePoint(self, point):
         return self.data[point.row][point.col] == '1'
 
+    # point inside map and point not obstacle
     def isMovablePoint(self, point):
         return self.isValidPoint(point) and not self.isObstaclePoint(point)
 
@@ -188,34 +190,48 @@ class FindingPathProblem:
     # start_row,start_col
     # goal_row,goal_col
     # ...
-    def __init__(self, f):
+    def __init__(self, f_in, f_log):
         # split for line to split to word
-        size = int(f.readline())
+        size = int(f_in.readline())
 
-        startPointData = f.readline().split(',')
+        # startPoint
+        startPointData = f_in.readline().split(',')
         x = int(startPointData[0])
         y = int(startPointData[1])
         self.startPoint = Point(x, y)
 
-        goalPointData = f.readline().split(',')
+        # goalPoint
+        goalPointData = f_in.readline().split(',')
         x = int(goalPointData[0])
         y = int(goalPointData[1])
         self.goalPoint = Point(x, y)
 
-        self.pathMap = PathMap(f, size)
+        self.pathMap = PathMap(f_in, size)
 
+        # log file
+        self.f_log = f_log
+
+    # print what read from file again
+    # include size, startPoint, goalPoint and pathMap
     def print(self):
         self.pathMap.printSize()
         print(self.startPoint.row, self.startPoint.col)
         print(self.goalPoint.row, self.goalPoint.col)
         self.pathMap.printMap()
 
+    # check if data read from file is valid
     def isValid(self):
+        # check if pathMap is correct size
         if not self.pathMap.isValid():
+            self.f_log.write('pathMap is not valid')
             return False
-        if not self.pathMap.isObstaclePoint(
-                self.startPoint) or not self.pathMap.isObstaclePoint(
+        # check if start point and goal point is insize map
+        # and is not obstacle
+        if not self.pathMap.isMovablePoint(
+                self.startPoint) or not self.pathMap.isMovablePoint(
                     self.goalPoint):
+            self.f_log.write(
+                'startPoint or goalPoint is not in map or is obstacle')
             return False
         return True
 
@@ -247,13 +263,14 @@ class FindingPathProblem:
                 # nextPoint already close
                 if closeList.exist(nextPoint):
                     continue
+
                 # nextPoint not yet open
-                elif not openList.exist(nextPoint):
+                if not openList.exist(nextPoint):
                     openList.add(nextPoint)
+
                 # nextPoint exist in openList
                 # replace if nextPoint has lower cost
-                else:
-                    openList.replace(nextPoint)
+                openList.replace(nextPoint)
 
         # no solution found
         return None
@@ -275,37 +292,47 @@ class FindingPathProblem:
 
     # write a solution to a file
     # -1 if no slution
-    def solution(self, f):
+    def writeSolution(self, f_out):
         goalPoint = self.solveAStar()
         if goalPoint == None:
-            f.write('-1\n')
+            f_out.write('-1\n')
             return
+
         # cost to goal
-        f.write(str(goalPoint.cost) + '\n')
+        f_out.write(str(goalPoint.cost) + '\n')
 
         # path to goal
         for point in self.getSolutionPath(goalPoint):
-            f.write('(' + str(point.row) + ',' + str(point.col) + ') ')
-        f.write('\n')
+            f_out.write('(' + str(point.row) + ',' + str(point.col) + ') ')
+        f_out.write('\n')
 
-        # create solution map
+        # create solutionMap
         solutionMap = []
         for row in self.pathMap.data:
             solutionMap.append(row)
-        for row in solutionMap:
-            for col in row:
-                if col == 0:
-                    col = '-'
-                elif col == 1:
-                    col = 'o'
-        solutionMap[self.startPoint.row][self.startPoint.col] = 'S'
-        solutionMap[goalPoint.row][goalPoint.col] = 'G'
+
+        # write obstacle point
+        for i in range(0, len(solutionMap)):
+            for j in range(0, len(solutionMap[i])):
+                if solutionMap[i][j] == '0':
+                    solutionMap[i][j] = '-'
+                elif solutionMap[i][j] == '1':
+                    solutionMap[i][j] = 'o'
+
+        # write solutionPath
         for point in self.getSolutionPath(goalPoint):
             solutionMap[point.row][point.col] = 'x'
+
+        # write startPoint, goalPoint
+        # because write solutionPath override startPoint, goalPoint
+        solutionMap[self.startPoint.row][self.startPoint.col] = 'S'
+        solutionMap[goalPoint.row][goalPoint.col] = 'G'
+
+        # write to file
         for row in solutionMap:
             for col in row:
-                f.write(col + ' ')
-            f.write('\n')
+                f_out.write(col + ' ')
+            f_out.write('\n')
 
 
 # return file if open success
@@ -321,7 +348,7 @@ def openWithError(filename, mode):
 def main():
     # 3 arguments
     if len(sys.argv) != 3:
-        print('Usage: lab02.exe <input file> <output file>')
+        print('Usage: 1612180_1612677.exe <input file> <output file>')
         return
 
     # if fail, return immediately
@@ -331,9 +358,14 @@ def main():
     f_out = openWithError(sys.argv[2], 'w')
     if f_out == None:
         f_in.close()
+    # use log.txt to store error when run program
+    f_log = openWithError('log.txt', 'w')
+    if f_log == None:
+        f_in.close()
+        f_out.close()
 
-    findingPathProblem = FindingPathProblem(f_in)
-    findingPathProblem.solution(f_out)
+    findingPathProblem = FindingPathProblem(f_in, f_log)
+    findingPathProblem.writeSolution(f_out)
 
     # must close file after return
     f_in.close()
