@@ -1,10 +1,8 @@
-# TODO write test, more test !!
-# TODO write a log
-
 # for arguments
 import sys
 
 import math
+import random
 
 
 # Point object to show where in the map
@@ -58,6 +56,7 @@ class AStarList:
                 break
 
     # return Point with lowest f()
+    # f(n) = cost(n) + heuristic(n)
     def remove(self, goalPoint):
         if self.isEmpty():
             return
@@ -249,14 +248,14 @@ class FindingPathProblem:
         openList.add(self.startPoint)
 
         while not openList.isEmpty():
+            # remove follow heuristic
             point = openList.remove(self.goalPoint)
 
             # found goal
             if point.isSamePos(self.goalPoint):
                 return point
 
-            # move point from openList to closeList
-            openList.remove(point)
+            # add current point to closeList
             closeList.add(point)
 
             for nextPoint in self.pathMap.nextMove(point):
@@ -267,10 +266,10 @@ class FindingPathProblem:
                 # nextPoint not yet open
                 if not openList.exist(nextPoint):
                     openList.add(nextPoint)
-
                 # nextPoint exist in openList
                 # replace if nextPoint has lower cost
-                openList.replace(nextPoint)
+                else:
+                    openList.replace(nextPoint)
 
         # no solution found
         return None
@@ -335,6 +334,93 @@ class FindingPathProblem:
             f_out.write('\n')
 
 
+class RandomPathProblem:
+    def __init__(self, f_rand, maxSize):
+        random.seed()
+
+        # random size
+        self.size = random.randrange(1, 1000) % maxSize + 1
+
+        # random startPoint, goalPoint
+        self.startPointRow = random.randrange(0, self.size)
+        self.startPointCol = random.randrange(0, self.size)
+        self.goalPointRow = random.randrange(0, self.size)
+        self.goalPointCol = random.randrange(0, self.size)
+
+        # random pathMap
+        self.pathMap = []
+        for i in range(0, self.size):
+            row = []
+            for j in range(0, self.size):
+                row.append(random.randrange(0, 1000) % 2)
+            self.pathMap.append(row)
+
+        # write size to file
+        f_rand.write(str(self.size) + '\n')
+
+        # write startPoint, goalPoint to file
+        f_rand.write(
+            str(self.startPointRow) + ',' + str(self.startPointCol) + '\n')
+        f_rand.write(
+            str(self.goalPointRow) + ',' + str(self.goalPointCol) + '\n')
+
+        # write pathMap to file
+        for row in self.pathMap:
+            for col in row:
+                f_rand.write(str(col) + ' ')
+            f_rand.write('\n')
+
+
+def testSolvePathProblem(maxSize):
+    f_rand = openWithError('rand.txt', 'w')
+    if f_rand == None:
+        return
+    randomPathProblem = RandomPathProblem(f_rand, maxSize)
+    f_rand.close()
+
+    f_in = openWithError('rand.txt', 'r')
+    if f_in == None:
+        return
+    f_out = openWithError('rand_out.txt', 'w')
+    if f_out == None:
+        f_in.close()
+        return
+    f_log = openWithError('rand_log.txt', 'w')
+    if f_log == None:
+        f_in.close()
+        f_out.close()
+
+    findingPathProblem = FindingPathProblem(f_in, f_log)
+    findingPathProblem.writeSolution(f_out)
+
+    f_in.close()
+    f_out.close()
+    f_log.close()
+
+
+def solvePathProblem(file_input, file_output, file_log):
+    # if fail, return immediately
+    f_in = openWithError(file_input, 'r')
+    if f_in == None:
+        return
+    f_out = openWithError(file_output, 'w')
+    if f_out == None:
+        f_in.close()
+    # use log to store error when run program
+    f_log = openWithError(file_log, 'w')
+    if f_log == None:
+        f_in.close()
+        f_out.close()
+
+    findingPathProblem = FindingPathProblem(f_in, f_log)
+    findingPathProblem.writeSolution(f_out)
+
+    # must close file after return
+    f_in.close()
+    f_out.close()
+    f_log.close()
+
+
 # return file if open success
 # if fail, return None
 def openWithError(filename, mode):
@@ -351,25 +437,9 @@ def main():
         print('Usage: 1612180_1612677.exe <input file> <output file>')
         return
 
-    # if fail, return immediately
-    f_in = openWithError(sys.argv[1], 'r')
-    if f_in == None:
-        return
-    f_out = openWithError(sys.argv[2], 'w')
-    if f_out == None:
-        f_in.close()
-    # use log.txt to store error when run program
-    f_log = openWithError('log.txt', 'w')
-    if f_log == None:
-        f_in.close()
-        f_out.close()
+    solvePathProblem(sys.argv[1], sys.argv[2], 'log.txt')
+    testSolvePathProblem(8)
 
-    findingPathProblem = FindingPathProblem(f_in, f_log)
-    findingPathProblem.writeSolution(f_out)
-
-    # must close file after return
-    f_in.close()
-    f_out.close()
     return
 
 
