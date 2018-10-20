@@ -306,6 +306,9 @@ class MyColor:
         'Red': (204, 36, 29),
         'White': (251, 241, 198),
         'Yellow': (215, 153, 33),
+        'Dark Green': (121, 116, 14),
+        'Dark Aqua': (66, 123, 88),
+        'Dark Blue': (7, 102, 120)
     }
 
 
@@ -323,9 +326,6 @@ class GUI_PathProblem:
         # margin size (margin la khoang cach giua cac o vuong trong window)
         self.MARGIN_SIZE = 4
 
-        # screen se duoc su dung lai
-        self.screen = None
-
         # kich thuoc cua mot o vuong
         self.POINT_SIZE = (self.WINDOW_WIDTH - self.pathMap.size *
                            (self.MARGIN_SIZE + 1)) // self.pathMap.size
@@ -333,7 +333,15 @@ class GUI_PathProblem:
         # diem ket thuc de truy nguoc tim duong di
         self.finishPoint = None
 
+        # clock for delay update display
         self.clock = pygame.time.Clock()
+
+        pygame.init()
+
+        # tao window, title, background
+        self.screen = pygame.display.set_mode(self.WINDOW_SIZE)
+        pygame.display.set_caption('Minh hoa A*')
+        self.screen.fill(MyColor.data['Black'])
 
     # update screen with delay time
     def display(self):
@@ -346,6 +354,12 @@ class GUI_PathProblem:
             [(self.MARGIN_SIZE + self.POINT_SIZE) * col + self.MARGIN_SIZE,
              (self.MARGIN_SIZE + self.POINT_SIZE) * row + self.MARGIN_SIZE,
              self.POINT_SIZE, self.POINT_SIZE])
+
+    def drawStartGoal(self):
+        self.drawPoint(self.pathMap.startPoint.row,
+                       self.pathMap.startPoint.col, MyColor.data['Red'])
+        self.drawPoint(self.pathMap.goalPoint.row, self.pathMap.goalPoint.col,
+                       MyColor.data['Orange'])
 
     def drawSolutionPath(self, color):
         if self.finishPoint == None:
@@ -360,13 +374,6 @@ class GUI_PathProblem:
         self.display()
 
     def drawAStar(self):
-        pygame.init()
-
-        # tao window, title, background
-        self.screen = pygame.display.set_mode(self.WINDOW_SIZE)
-        pygame.display.set_caption('Minh hoa A*')
-        self.screen.fill(MyColor.data['Black'])
-
         # draw o trong va vat can
         for row in range(self.pathMap.size):
             for col in range(self.pathMap.size):
@@ -381,10 +388,7 @@ class GUI_PathProblem:
                 self.drawPoint(row, col, color)
 
         # draw startPoint, goalPoint
-        self.drawPoint(self.pathMap.startPoint.row,
-                       self.pathMap.startPoint.col, MyColor.data['Red'])
-        self.drawPoint(self.pathMap.goalPoint.row, self.pathMap.goalPoint.col,
-                       MyColor.data['Orange'])
+        self.drawStartGoal()
 
         # update lai screen sau khi ve
         self.display()
@@ -403,7 +407,7 @@ class GUI_PathProblem:
                 # found goal
                 if point.isSamePos(self.pathMap.goalPoint):
                     self.finishPoint = point
-                    self.drawSolutionPath(MyColor.data['Blue'])
+                    self.drawSolutionPath(MyColor.data['Yellow'])
                     break
                 else:
                     # add current point to closeList
@@ -414,9 +418,6 @@ class GUI_PathProblem:
                         if closeList.exist(nextPoint):
                             continue
 
-                        self.drawPoint(nextPoint.row, nextPoint.col,
-                                       MyColor.data['Orange'])
-
                         # nextPoint not yet open
                         if not openList.exist(nextPoint):
                             openList.add(nextPoint)
@@ -424,7 +425,16 @@ class GUI_PathProblem:
                         # replace if nextPoint has lower cost
                         else:
                             openList.replace(nextPoint)
-                    self.display()
+
+                for p in openList.data:
+                    self.drawPoint(p.row, p.col, MyColor.data['Aqua'])
+                self.drawStartGoal()
+                self.display()
+
+                for p in closeList.data:
+                    self.drawPoint(p.row, p.col, MyColor.data['Dark Blue'])
+                self.drawStartGoal()
+                self.display()
 
         # Keep window stay open
         running = True
