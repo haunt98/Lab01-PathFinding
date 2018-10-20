@@ -1,12 +1,10 @@
-# TODO quang startPoint vao PathMap
-
 # for arguments
 import sys
 
 import math
 import random
 
-#for GUI
+# for GUI
 import pygame
 
 
@@ -26,23 +24,14 @@ class Point:
     def isSamePos(self, point):
         return self.row == point.row and self.col == point.col
 
-    def print(self):
-        print(self.row, self.col, self.cost)
-
-    # f(n) = cost(n) + heuristic(n)
-    def calc_f(self, goalPoint):
+    def calc_heruristic_euclid(self, goalPoint):
         return self.cost + self.EuclideanDistance(goalPoint)
 
 
 # AStarList object for store Point
-# use f(n) = cost(n) + heuristic(n)
 class AStarList:
     def __init__(self):
         self.data = []
-
-    def print(self):
-        for i in self.data:
-            i.print()
 
     def isEmpty(self):
         # empty sequences are False
@@ -60,15 +49,14 @@ class AStarList:
                     self.data[i].parent = replacePoint.parent
                 break
 
-    # return Point with lowest f()
-    # f(n) = cost(n) + heuristic(n)
+    # return Point with lowest heuristic
     def remove(self, goalPoint):
         if self.isEmpty():
             return
         minIndex = 0
         for i in range(1, len(self.data)):
-            if self.data[i].calc_f(goalPoint) < self.data[minIndex].calc_f(
-                    goalPoint):
+            if self.data[i].calc_heruristic_euclid(goalPoint) < self.data[
+                    minIndex].calc_heruristic_euclid(goalPoint):
                 minIndex = i
         return self.data.pop(minIndex)
 
@@ -82,55 +70,65 @@ class AStarList:
 
 
 class PathMap:
-    # Example
+    # Luu size, startPoint, goalPoint and map data
+    # map look like
     # 1 0 0
     # 0 1 0
     # 0 1 0
     # 1 is obstacle, 0 is not
-    def __init__(self, f, size):
-        self.size = size
+    def __init__(self, f_in):
+        # get size
+        self.size = int(f_in.readline())
+
+        # get startPoint
+        startPointData = f_in.readline().split(',')
+        x = int(startPointData[0])
+        y = int(startPointData[1])
+        self.startPoint = Point(x, y)
+
+        # get goalPoint
+        goalPointData = f_in.readline().split(',')
+        x = int(goalPointData[0])
+        y = int(goalPointData[1])
+        self.goalPoint = Point(x, y)
+
+        # get map data
         self.data = []
-        for line in f:
+        for line in f_in:
             row = []
             for word in line.split():
                 row.append(str(word))
             self.data.append(row)
 
-    def printSize(self):
-        print(self.size)
-
-    def printMap(self):
-        for row in self.data:
-            for num in row:
-                print(num, end=' ')
-            # print() itself will print new line
-            print()
-
-    # check if pathMap is correct size
+    # check if map data is valid len row and len col
     def isValid(self):
+        # chieu dai row va col phai = size
         if len(self.data) != self.size:
             return False
         for row in self.data:
             if len(row) != self.size:
                 return False
+
+        # startPoint va goalPoint phai trong map va di chuyen duoc
+        if not self.isMovablePoint(self.startPoint) or not self.isMovablePoint(
+                self.goalPoint):
+            return False
+
         return True
 
     # return True if Point is in map
-    # otherwise return False
-    def isValidPoint(self, point):
+    def isPointInside(self, point):
         return point.row >= 0 and point.row < self.size and point.col >= 0 and point.col < self.size
 
     # return True if Point is obstacle
-    # otherwise return False
     def isObstaclePoint(self, point):
         return self.data[point.row][point.col] == '1'
 
     # point inside map and point not obstacle
     def isMovablePoint(self, point):
-        return self.isValidPoint(point) and not self.isObstaclePoint(point)
+        return self.isPointInside(point) and not self.isObstaclePoint(point)
 
     # next move of p is Point from 1 to 8
-    # valid move if next Point is in map and not obstacle
     # return list Point object
     # 1 2 3
     # 8 p 4
@@ -183,81 +181,34 @@ class PathMap:
             nextPointS.append(nextPoint)
         return nextPointS
 
-    def printNextMove(self, point):
-        for move in self.nextMove(point):
-            move.print()
 
-
-class FindingPathProblem:
+class PathProblem:
     # get value from file
-    # size
-    # start_row,start_col
-    # goal_row,goal_col
-    # ...
     def __init__(self, f_in, f_log):
-        # split for line to split to word
-        size = int(f_in.readline())
-
-        # startPoint
-        startPointData = f_in.readline().split(',')
-        x = int(startPointData[0])
-        y = int(startPointData[1])
-        self.startPoint = Point(x, y)
-
-        # goalPoint
-        goalPointData = f_in.readline().split(',')
-        x = int(goalPointData[0])
-        y = int(goalPointData[1])
-        self.goalPoint = Point(x, y)
-
-        self.pathMap = PathMap(f_in, size)
+        # include size, startPoint, goalPoint, map data
+        self.pathMap = PathMap(f_in)
 
         # log file
         self.f_log = f_log
 
-    # print what read from file again
-    # include size, startPoint, goalPoint and pathMap
-    def print(self):
-        self.pathMap.printSize()
-        print(self.startPoint.row, self.startPoint.col)
-        print(self.goalPoint.row, self.goalPoint.col)
-        self.pathMap.printMap()
-
-    # check if data read from file is valid
-    def isValid(self):
-        # check if pathMap is correct size
-        if not self.pathMap.isValid():
-            self.f_log.write('pathMap is not valid')
-            return False
-        # check if start point and goal point is insize map
-        # and is not obstacle
-        if not self.pathMap.isMovablePoint(
-                self.startPoint) or not self.pathMap.isMovablePoint(
-                    self.goalPoint):
-            self.f_log.write(
-                'startPoint or goalPoint is not in map or is obstacle')
-            return False
-        return True
-
     # https://en.wikipedia.org/wiki/A*_search_algorithm
-    # assume heuristic(n) is consistent
-    # otherwise, must rediscover point in closeList
     def solveAStar(self):
         # check path map again for size
-        if not self.isValid():
+        if not self.pathMap.isValid():
+            self.f_log.write('Data from file input is not valid\n')
             return None
 
-        # init closeList and openList
+        # init
         closeList = AStarList()
         openList = AStarList()
-        openList.add(self.startPoint)
+        openList.add(self.pathMap.startPoint)
 
         while not openList.isEmpty():
-            # remove follow heuristic
-            point = openList.remove(self.goalPoint)
+            # remove point which has lowest heuristic
+            point = openList.remove(self.pathMap.goalPoint)
 
             # found goal
-            if point.isSamePos(self.goalPoint):
+            if point.isSamePos(self.pathMap.goalPoint):
                 return point
 
             # add current point to closeList
@@ -279,15 +230,15 @@ class FindingPathProblem:
         # no solution found
         return None
 
-    # Trace solution path follow from goalPoint
-    # which parent of goalPoint
-    # which parent of parent of goalPoint
+    # Trace solution path follow from finishPoint
+    # which parent of finishPoint
+    # which parent of parent of finishPoint
     # ... whatever
-    def getSolutionPath(self, goalPoint):
+    def getSolutionPath(self, finishPoint):
         solutionPath = []
-        if goalPoint == None:
+        if finishPoint == None:
             return
-        p = goalPoint
+        p = finishPoint
         while p.parent != None:
             solutionPath.insert(0, p)
             p = p.parent
@@ -295,21 +246,20 @@ class FindingPathProblem:
         return solutionPath
 
     # write a solution to a file
-    # -1 if no slution
     def writeSolution(self, f_out):
         # giai bang A*
-        goalPoint = self.solveAStar()
+        finishPoint = self.solveAStar()
 
         # khong co duong di
-        if goalPoint == None:
+        if finishPoint == None:
             f_out.write('-1\n')
             return
 
-        # cost to goal
-        f_out.write(str(goalPoint.cost) + '\n')
+        # cost
+        f_out.write(str(finishPoint.cost) + '\n')
 
-        # path to goal
-        for point in self.getSolutionPath(goalPoint):
+        # path
+        for point in self.getSolutionPath(finishPoint):
             f_out.write('(' + str(point.row) + ',' + str(point.col) + ') ')
         f_out.write('\n')
 
@@ -318,7 +268,8 @@ class FindingPathProblem:
         for row in self.pathMap.data:
             solutionMap.append(row)
 
-        # write obstacle point
+        # '-' o trong
+        # 'o' vat can
         for i in range(0, len(solutionMap)):
             for j in range(0, len(solutionMap[i])):
                 if solutionMap[i][j] == '0':
@@ -326,16 +277,16 @@ class FindingPathProblem:
                 elif solutionMap[i][j] == '1':
                     solutionMap[i][j] = 'o'
 
-        # write solutionPath
-        for point in self.getSolutionPath(goalPoint):
+        # write solutionPath first
+        for point in self.getSolutionPath(finishPoint):
             solutionMap[point.row][point.col] = 'x'
 
-        # write startPoint, goalPoint
-        # because write solutionPath override startPoint, goalPoint
-        solutionMap[self.startPoint.row][self.startPoint.col] = 'S'
-        solutionMap[goalPoint.row][goalPoint.col] = 'G'
+        # write startPoint, finishPoint later
+        solutionMap[self.pathMap.startPoint.row][self.pathMap.startPoint.
+                                                 col] = 'S'
+        solutionMap[finishPoint.row][finishPoint.col] = 'G'
 
-        # write to file
+        # write map to file
         for row in solutionMap:
             for col in row:
                 f_out.write(col + ' ')
@@ -343,23 +294,26 @@ class FindingPathProblem:
 
 
 # thu vien dinh nghia cac mau sac
-# color palette gruvbox
 # https://github.com/morhetz/gruvbox
 class MyColor:
     data = {
-        'Red': (204, 36, 29),
-        'Orange': (214, 93, 14),
+        'Aqua': (104, 157, 106),
         'Black': (40, 40, 40),
+        'Blue': (69, 133, 136),
+        'Gray': (146, 131, 116),
+        'Green': (152, 151, 26),
+        'Orange': (214, 93, 14),
+        'Red': (204, 36, 29),
         'White': (251, 241, 198),
-        'Gray': (146, 131, 116)
+        'Yellow': (215, 153, 33),
     }
 
 
 # minh hoa A* bang GUI
-class GUI_FindingPathProblem:
-    def __init__(self, findingPathProblem):
-        # lay lai size, pathMap, goalPoint, startPoint
-        self.findingPathProblem = findingPathProblem
+class GUI_PathProblem:
+    def __init__(self, f_in, f_log):
+        # lay lai size, goalPoint, startPoint, map data
+        self.pathMap = PathMap(f_in)
 
         # window size (kich thuoc cua cua so hien ra)
         self.WINDOW_WIDTH = 512
@@ -372,13 +326,19 @@ class GUI_FindingPathProblem:
         # screen se duoc su dung lai
         self.screen = None
 
-        # thoi gian dung
-        self.DELAY = 6000
-
         # kich thuoc cua mot o vuong
-        self.size = self.findingPathProblem.pathMap.size
-        self.POINT_SIZE = (self.WINDOW_WIDTH - self.size *
-                           (self.MARGIN_SIZE + 1)) // self.size
+        self.POINT_SIZE = (self.WINDOW_WIDTH - self.pathMap.size *
+                           (self.MARGIN_SIZE + 1)) // self.pathMap.size
+
+        # diem ket thuc de truy nguoc tim duong di
+        self.finishPoint = None
+
+        self.clock = pygame.time.Clock()
+
+    # update screen with delay time
+    def display(self):
+        pygame.display.flip()
+        self.clock.tick(1)
 
     def drawPoint(self, row, col, color):
         pygame.draw.rect(
@@ -387,66 +347,92 @@ class GUI_FindingPathProblem:
              (self.MARGIN_SIZE + self.POINT_SIZE) * row + self.MARGIN_SIZE,
              self.POINT_SIZE, self.POINT_SIZE])
 
-    def initWindowDraw(self):
-        # must init pygame
+    def drawSolutionPath(self, color):
+        if self.finishPoint == None:
+            return
+
+        p = self.finishPoint
+        while p.parent != None:
+            self.drawPoint(p.row, p.col, color)
+            self.display()
+            p = p.parent
+        self.drawPoint(p.row, p.col, color)
+        self.display()
+
+    def drawAStar(self):
         pygame.init()
 
-        # tao window
+        # tao window, title, background
         self.screen = pygame.display.set_mode(self.WINDOW_SIZE)
-
-        # hien title cua window
         pygame.display.set_caption('Minh hoa A*')
+        self.screen.fill(MyColor.data['Black'])
 
-        # tao clock de ve cham mot ti
-        clock = pygame.time.Clock()
+        # draw o trong va vat can
+        for row in range(self.pathMap.size):
+            for col in range(self.pathMap.size):
+                # mac dinh la o trong
+                color = MyColor.data['White']
 
-        finishDraw = False
-        while not finishDraw:
-            # nhan chuot vao nut exit
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    finishDraw = True
+                # vat can
+                if self.pathMap.data[row][col] == '1':
+                    color = MyColor.data['Gray']
 
-            # to mau background
-            self.screen.fill(MyColor.data['Black'])
+                # to mau o vuong
+                self.drawPoint(row, col, color)
 
-            # draw o trong va vat can
-            for row in range(self.size):
-                for col in range(self.size):
-                    # mac dinh la o trong
-                    color = MyColor.data['White']
+        # draw startPoint, goalPoint
+        self.drawPoint(self.pathMap.startPoint.row,
+                       self.pathMap.startPoint.col, MyColor.data['Red'])
+        self.drawPoint(self.pathMap.goalPoint.row, self.pathMap.goalPoint.col,
+                       MyColor.data['Orange'])
 
-                    # vat can
-                    if self.findingPathProblem.pathMap.data[row][col] == '1':
-                        color = MyColor.data['Gray']
+        # update lai screen sau khi ve
+        self.display()
 
-                    # to mau o vuong
-                    self.drawPoint(row, col, color)
+        # minh hoa A*
+        if self.pathMap.isValid():
+            # init list
+            closeList = AStarList()
+            openList = AStarList()
+            openList.add(self.pathMap.startPoint)
 
-            # draw startPoint, goalPoint
-            self.drawPoint(self.findingPathProblem.startPoint.row,
-                           self.findingPathProblem.startPoint.col,
-                           MyColor.data['Red'])
-            self.drawPoint(self.findingPathProblem.goalPoint.row,
-                           self.findingPathProblem.goalPoint.col,
-                           MyColor.data['Orange'])
+            while not openList.isEmpty():
+                # lay diem gan goalPoint nhat theo heuristic
+                point = openList.remove(self.pathMap.goalPoint)
 
-            # Dung mot ti de nguoi dung nhin duoc
-            clock.tick(self.DELAY)
+                # found goal
+                if point.isSamePos(self.pathMap.goalPoint):
+                    self.finishPoint = point
+                    self.drawSolutionPath(MyColor.data['Blue'])
+                    break
+                else:
+                    # add current point to closeList
+                    closeList.add(point)
 
-            # update lai screen sau khi ve
-            pygame.display.flip()
+                    for nextPoint in self.pathMap.nextMove(point):
+                        # nextPoint already close
+                        if closeList.exist(nextPoint):
+                            continue
 
-        # real exit pygame
-        pygame.quit()
+                        self.drawPoint(nextPoint.row, nextPoint.col,
+                                       MyColor.data['Orange'])
+
+                        # nextPoint not yet open
+                        if not openList.exist(nextPoint):
+                            openList.add(nextPoint)
+                        # nextPoint exist in openList
+                        # replace if nextPoint has lower cost
+                        else:
+                            openList.replace(nextPoint)
+                    self.display()
 
 
 class RandomPathProblem:
-    def __init__(self, f_rand, maxSize):
+    def __init__(self, f_rand):
         random.seed()
 
         # random size
-        self.size = random.randrange(1, 1000) % maxSize + 1
+        self.size = random.randrange(8, 16)
 
         # random startPoint, goalPoint
         self.startPointRow = random.randrange(0, self.size)
@@ -454,13 +440,13 @@ class RandomPathProblem:
         self.goalPointRow = random.randrange(0, self.size)
         self.goalPointCol = random.randrange(0, self.size)
 
-        # random pathMap
-        self.pathMap = []
+        # random mapData
+        self.mapData = []
         for i in range(0, self.size):
             row = []
             for j in range(0, self.size):
                 row.append(random.randrange(0, 1000) % 2)
-            self.pathMap.append(row)
+            self.mapData.append(row)
 
         # write size to file
         f_rand.write(str(self.size) + '\n')
@@ -471,21 +457,21 @@ class RandomPathProblem:
         f_rand.write(
             str(self.goalPointRow) + ',' + str(self.goalPointCol) + '\n')
 
-        # write pathMap to file
-        for row in self.pathMap:
+        # write mapData to file
+        for row in self.mapData:
             for col in row:
                 f_rand.write(str(col) + ' ')
             f_rand.write('\n')
 
 
-def testSolvePathProblemCommandLine(maxSize):
-    f_rand = openWithError('rand.txt', 'w')
+def testSolveCmd():
+    f_rand = openWithError('rand_in.txt', 'w')
     if f_rand == None:
         return
-    randomPathProblem = RandomPathProblem(f_rand, maxSize)
+    randomPathProblem = RandomPathProblem(f_rand)
     f_rand.close()
 
-    f_in = openWithError('rand.txt', 'r')
+    f_in = openWithError('rand_in.txt', 'r')
     if f_in == None:
         return
     f_out = openWithError('rand_out.txt', 'w')
@@ -497,15 +483,15 @@ def testSolvePathProblemCommandLine(maxSize):
         f_in.close()
         f_out.close()
 
-    findingPathProblem = FindingPathProblem(f_in, f_log)
-    findingPathProblem.writeSolution(f_out)
+    pathProblem = PathProblem(f_in, f_log)
+    pathProblem.writeSolution(f_out)
 
     f_in.close()
     f_out.close()
     f_log.close()
 
 
-def solvePathProblemCommandLine(file_input, file_output, file_log):
+def solveCmd(file_input, file_output, file_log):
     # if fail, return immediately
     f_in = openWithError(file_input, 'r')
     if f_in == None:
@@ -520,18 +506,17 @@ def solvePathProblemCommandLine(file_input, file_output, file_log):
         f_out.close()
 
     # read problem from file
-    findingPathProblem = FindingPathProblem(f_in, f_log)
+    pathProblem = PathProblem(f_in, f_log)
 
     # write solution to file
-    findingPathProblem.writeSolution(f_out)
+    pathProblem.writeSolution(f_out)
 
-    # must close file after return
     f_in.close()
     f_out.close()
     f_log.close()
 
 
-def solvePathProblemGUI(file_input, file_log):
+def solveGUI(file_input, file_log):
     # if fail, return immediately
     f_in = openWithError(file_input, 'r')
     if f_in == None:
@@ -541,14 +526,10 @@ def solvePathProblemGUI(file_input, file_log):
     if f_log == None:
         f_in.close()
 
-    # read problem from file
-    findingPathProblem = FindingPathProblem(f_in, f_log)
-
     # minh hoa solution bang GUI
-    gui = GUI_FindingPathProblem(findingPathProblem)
-    gui.initWindowDraw()
+    gui = GUI_PathProblem(f_in, f_log)
+    gui.drawAStar()
 
-    # must close file after return
     f_in.close()
     f_log.close()
 
@@ -569,11 +550,12 @@ def main():
         print('Usage: 1612180_1612677.exe <input file> <output file>')
         return
 
-    solvePathProblemGUI(sys.argv[1], 'log.txt')
+    #solveGUI(sys.argv[1], 'log.txt')
+    #solveCmd(sys.argv[1], sys.argv[2], 'log.txt')
+    testSolveCmd()
 
     return
 
 
-# https://stackoverflow.com/questions/4041238/why-use-def-main
 if __name__ == '__main__':
     main()
