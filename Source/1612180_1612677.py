@@ -338,7 +338,7 @@ class GUI_PathProblem:
     # update screen with delay time
     def display(self):
         pygame.display.flip()
-        self.clock.tick(1)
+        self.clock.tick(2)
 
     def drawPoint(self, row, col, color):
         pygame.draw.rect(
@@ -425,6 +425,13 @@ class GUI_PathProblem:
                         else:
                             openList.replace(nextPoint)
                     self.display()
+
+        # Keep window stay open
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
 
 
 class RandomPathProblem:
@@ -550,9 +557,9 @@ def main():
         print('Usage: 1612180_1612677.exe <input file> <output file>')
         return
 
-    #solveGUI(sys.argv[1], 'log.txt')
+    solveGUI(sys.argv[1], 'log.txt')
     #solveCmd(sys.argv[1], sys.argv[2], 'log.txt')
-    testSolveCmd()
+    #testSolveCmd()
 
     return
 
