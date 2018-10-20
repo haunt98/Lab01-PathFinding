@@ -1,8 +1,13 @@
+# TODO quang startPoint vao PathMap
+
 # for arguments
 import sys
 
 import math
 import random
+
+#for GUI
+import pygame
 
 
 # Point object to show where in the map
@@ -292,7 +297,10 @@ class FindingPathProblem:
     # write a solution to a file
     # -1 if no slution
     def writeSolution(self, f_out):
+        # giai bang A*
         goalPoint = self.solveAStar()
+
+        # khong co duong di
         if goalPoint == None:
             f_out.write('-1\n')
             return
@@ -334,6 +342,105 @@ class FindingPathProblem:
             f_out.write('\n')
 
 
+# thu vien dinh nghia cac mau sac
+# color palette gruvbox
+# https://github.com/morhetz/gruvbox
+class MyColor:
+    data = {
+        'Red': (204, 36, 29),
+        'Orange': (214, 93, 14),
+        'Black': (40, 40, 40),
+        'White': (251, 241, 198),
+        'Gray': (146, 131, 116)
+    }
+
+
+# minh hoa A* bang GUI
+class GUI_FindingPathProblem:
+    def __init__(self, findingPathProblem):
+        # lay lai size, pathMap, goalPoint, startPoint
+        self.findingPathProblem = findingPathProblem
+
+        # window size (kich thuoc cua cua so hien ra)
+        self.WINDOW_WIDTH = 512
+        self.WINDOW_HEIGHT = 512
+        self.WINDOW_SIZE = [self.WINDOW_WIDTH, self.WINDOW_HEIGHT]
+
+        # margin size (margin la khoang cach giua cac o vuong trong window)
+        self.MARGIN_SIZE = 4
+
+        # screen se duoc su dung lai
+        self.screen = None
+
+        # thoi gian dung
+        self.DELAY = 6000
+
+        # kich thuoc cua mot o vuong
+        self.size = self.findingPathProblem.pathMap.size
+        self.POINT_SIZE = (self.WINDOW_WIDTH - self.size *
+                           (self.MARGIN_SIZE + 1)) // self.size
+
+    def drawPoint(self, row, col, color):
+        pygame.draw.rect(
+            self.screen, color,
+            [(self.MARGIN_SIZE + self.POINT_SIZE) * col + self.MARGIN_SIZE,
+             (self.MARGIN_SIZE + self.POINT_SIZE) * row + self.MARGIN_SIZE,
+             self.POINT_SIZE, self.POINT_SIZE])
+
+    def initWindowDraw(self):
+        # must init pygame
+        pygame.init()
+
+        # tao window
+        self.screen = pygame.display.set_mode(self.WINDOW_SIZE)
+
+        # hien title cua window
+        pygame.display.set_caption('Minh hoa A*')
+
+        # tao clock de ve cham mot ti
+        clock = pygame.time.Clock()
+
+        finishDraw = False
+        while not finishDraw:
+            # nhan chuot vao nut exit
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    finishDraw = True
+
+            # to mau background
+            self.screen.fill(MyColor.data['Black'])
+
+            # draw o trong va vat can
+            for row in range(self.size):
+                for col in range(self.size):
+                    # mac dinh la o trong
+                    color = MyColor.data['White']
+
+                    # vat can
+                    if self.findingPathProblem.pathMap.data[row][col] == '1':
+                        color = MyColor.data['Gray']
+
+                    # to mau o vuong
+                    self.drawPoint(row, col, color)
+
+            # draw startPoint, goalPoint
+            self.drawPoint(self.findingPathProblem.startPoint.row,
+                           self.findingPathProblem.startPoint.col,
+                           MyColor.data['Red'])
+            self.drawPoint(self.findingPathProblem.goalPoint.row,
+                           self.findingPathProblem.goalPoint.col,
+                           MyColor.data['Orange'])
+
+            # Dung mot ti de nguoi dung nhin duoc
+            clock.tick(self.DELAY)
+
+            # update lai screen sau khi ve
+            pygame.display.flip()
+
+        # real exit pygame
+        pygame.quit()
+
+
 class RandomPathProblem:
     def __init__(self, f_rand, maxSize):
         random.seed()
@@ -371,7 +478,7 @@ class RandomPathProblem:
             f_rand.write('\n')
 
 
-def testSolvePathProblem(maxSize):
+def testSolvePathProblemCommandLine(maxSize):
     f_rand = openWithError('rand.txt', 'w')
     if f_rand == None:
         return
@@ -398,7 +505,7 @@ def testSolvePathProblem(maxSize):
     f_log.close()
 
 
-def solvePathProblem(file_input, file_output, file_log):
+def solvePathProblemCommandLine(file_input, file_output, file_log):
     # if fail, return immediately
     f_in = openWithError(file_input, 'r')
     if f_in == None:
@@ -412,12 +519,37 @@ def solvePathProblem(file_input, file_output, file_log):
         f_in.close()
         f_out.close()
 
+    # read problem from file
     findingPathProblem = FindingPathProblem(f_in, f_log)
+
+    # write solution to file
     findingPathProblem.writeSolution(f_out)
 
     # must close file after return
     f_in.close()
     f_out.close()
+    f_log.close()
+
+
+def solvePathProblemGUI(file_input, file_log):
+    # if fail, return immediately
+    f_in = openWithError(file_input, 'r')
+    if f_in == None:
+        return
+    # use log to store error when run program
+    f_log = openWithError(file_log, 'w')
+    if f_log == None:
+        f_in.close()
+
+    # read problem from file
+    findingPathProblem = FindingPathProblem(f_in, f_log)
+
+    # minh hoa solution bang GUI
+    gui = GUI_FindingPathProblem(findingPathProblem)
+    gui.initWindowDraw()
+
+    # must close file after return
+    f_in.close()
     f_log.close()
 
 
@@ -437,8 +569,7 @@ def main():
         print('Usage: 1612180_1612677.exe <input file> <output file>')
         return
 
-    solvePathProblem(sys.argv[1], sys.argv[2], 'log.txt')
-    testSolvePathProblem(8)
+    solvePathProblemGUI(sys.argv[1], 'log.txt')
 
     return
 
