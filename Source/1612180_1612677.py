@@ -192,7 +192,8 @@ class PathProblem:
         self.f_log = f_log
 
     # https://en.wikipedia.org/wiki/A*_search_algorithm
-    def solveAStar(self):
+    # heuristic phai chap nhan duoc
+    def solveAStar_acceptable(self):
         # check path map again for size
         if not self.pathMap.isValid():
             self.f_log.write('Data from file input is not valid\n')
@@ -230,6 +231,13 @@ class PathProblem:
         # no solution found
         return None
 
+    # heuristic co the khong chap nhan duoc
+    def solveAStar_general(self):
+        # check path map again for size
+        if not self.pathMap.isValid():
+            self.f_log.write('Data from file input is not valid\n')
+            return None
+
     # Trace solution path follow from finishPoint
     # which parent of finishPoint
     # which parent of parent of finishPoint
@@ -247,8 +255,8 @@ class PathProblem:
 
     # write a solution to a file
     def writeSolution(self, f_out):
-        # giai bang A*
-        finishPoint = self.solveAStar()
+        # giai bang A* voi heuristic chap nhan duoc
+        finishPoint = self.solveAStar_acceptable()
 
         # khong co duong di
         if finishPoint == None:
@@ -346,7 +354,7 @@ class GUI_PathProblem:
     # update screen with delay time
     def display(self):
         pygame.display.flip()
-        self.clock.tick(2)
+        self.clock.tick(5)
 
     def drawPoint(self, row, col, color):
         pygame.draw.rect(
@@ -407,7 +415,7 @@ class GUI_PathProblem:
                 # found goal
                 if point.isSamePos(self.pathMap.goalPoint):
                     self.finishPoint = point
-                    self.drawSolutionPath(MyColor.data['Yellow'])
+                    self.drawSolutionPath(MyColor.data['Red'])
                     break
                 else:
                     # add current point to closeList
@@ -427,12 +435,12 @@ class GUI_PathProblem:
                             openList.replace(nextPoint)
 
                 for p in openList.data:
-                    self.drawPoint(p.row, p.col, MyColor.data['Aqua'])
+                    self.drawPoint(p.row, p.col, MyColor.data['Yellow'])
                 self.drawStartGoal()
                 self.display()
 
                 for p in closeList.data:
-                    self.drawPoint(p.row, p.col, MyColor.data['Dark Blue'])
+                    self.drawPoint(p.row, p.col, MyColor.data['Aqua'])
                 self.drawStartGoal()
                 self.display()
 
@@ -567,8 +575,8 @@ def main():
         print('Usage: 1612180_1612677.exe <input file> <output file>')
         return
 
-    solveGUI(sys.argv[1], 'log.txt')
-    #solveCmd(sys.argv[1], sys.argv[2], 'log.txt')
+    #solveGUI(sys.argv[1], 'log.txt')
+    solveCmd(sys.argv[1], sys.argv[2], 'log.txt')
     #testSolveCmd()
 
     return
