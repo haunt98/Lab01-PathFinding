@@ -1,7 +1,7 @@
 # for arguments
 import sys
 
-import PathProblem
+import SolveProblem
 import Heuristic
 
 
@@ -10,9 +10,8 @@ def main():
         print('Usage: 1612180_1612677.exe <input file> <output file>')
         return
 
-    findPath = PathProblem.FindPath(sys.argv[1], 'log.txt')
-    findPath.writeSolution(sys.argv[2], findPath.AStar,
-                           Heuristic.EuclidDistance)
+    pf = SolveProblem.Pathfinding(sys.argv[1], 'log.txt')
+    pf.writeSolution(sys.argv[2], pf.AStar, Heuristic.EuclidDistance)
 
 
 if __name__ == '__main__':

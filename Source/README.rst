@@ -9,37 +9,38 @@ Mô tả Source
 Nhận vào input và output,
 xử lý bài toán từ input và ghi kết quả ra output
 
-PathProblem.py
+ReadProblem.py
 ==============
 
-Chứa hàm đọc bài toán từ file, và giải quyết bài toán
+Chứa hàm đọc bài toán từ file
+
+SolveProblem.py
+==============
+
+Chứa hàm giải quyết bài toán
 
 RandomProblem.py
 ================
 
-Chứa hàm tạo một bộ random
+Chứa hàm tạo một bài toán random và lưu vào file
 
 CLITesting.py
 =============
 
-Tạo một bộ random, xử lý bài toán và cho ra file kết quả
+Tự tạo một bài toán random rồi xử lý
 
-GUIColor.py
-===========
-
-Định nghĩa màu sắc
 
 GUIDraw.py
 ==========
 
-Chứa hàm vẽ AStar
+Chứa hàm định nghĩa màu sắc và hàm vẽ AStar
 
 GUITesting.py
 ============
 
-Tạo một bộ random và chạy thử bằng GUI
+Tự tạo một bài toán random rồi minh họa bằng GUI
 
 Heuristic.py
 ============
 
-Chứa định nghĩa hàm heuristic
+Chứa hàm heuristic

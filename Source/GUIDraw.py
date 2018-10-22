@@ -1,9 +1,26 @@
 # for GUI
 import pygame
-import GUIColor
 
 import queue
-import PathProblem
+import ReadProblem
+
+
+class MyColor:
+    data = {
+        'Aqua': (104, 157, 106),
+        'Black': (40, 40, 40),
+        'Blue': (69, 133, 136),
+        'Gray': (146, 131, 116),
+        'Green': (152, 151, 26),
+        'Orange': (214, 93, 14),
+        'Red': (204, 36, 29),
+        'White': (251, 241, 198),
+        'Yellow': (250, 189, 47),
+        'Dark Green': (121, 116, 14),
+        'Dark Aqua': (66, 123, 88),
+        'Dark Blue': (7, 102, 120),
+        'Dark Red': (157, 0, 6)
+    }
 
 
 class GUIFindPath:
@@ -12,7 +29,7 @@ class GUIFindPath:
         f_log = open(name_log, 'w')
 
         # doc bai toan tu file
-        self.dataMap = PathProblem.DataMap(f_in, f_log)
+        self.dataMap = ReadProblem.DataMap(f_in, f_log)
 
         # tinh hop le cua bai toan
         self.valid = self.dataMap.checkValid()
@@ -37,7 +54,7 @@ class GUIFindPath:
         pygame.init()
         self.screen = pygame.display.set_mode([self.win_size, self.win_size])
         pygame.display.set_caption('Minh hoa A*')
-        self.screen.fill(GUIColor.Color.data['Black'])
+        self.screen.fill(MyColor.data['Black'])
 
     # update screen with delay time
     def display(self):
@@ -57,11 +74,11 @@ class GUIFindPath:
         for row in range(self.dataMap.size):
             for col in range(self.dataMap.size):
                 # mac dinh la o trong
-                color = GUIColor.Color.data['White']
+                color = MyColor.data['White']
 
                 # vat can
                 if self.dataMap.arr[row][col] == '1':
-                    color = GUIColor.Color.data['Gray']
+                    color = MyColor.data['Gray']
 
                 # to mau
                 self.drawPoint((row, col), color)
@@ -84,7 +101,7 @@ class GUIFindPath:
 
             # cur is tuple (priority, point position)
             # cur[1] is point position
-            if PathProblem.samePosition(cur[1], self.dataMap.GPoint):
+            if ReadProblem.samePosition(cur[1], self.dataMap.GPoint):
                 break
 
             # np is next point
@@ -101,7 +118,7 @@ class GUIFindPath:
                     np_priority = np_cost + heuristic(np, self.dataMap.GPoint)
                     openList.put((np_priority, np))
 
-                    self.drawPoint(np, GUIColor.Color.data['Yellow'])
+                    self.drawPoint(np, MyColor.data['Yellow'])
 
             self.display()
 
@@ -128,14 +145,14 @@ class GUIFindPath:
             return
 
         self.drawOTrongVatCan()
-        self.drawPoint(self.dataMap.SPoint, GUIColor.Color.data['Red'])
-        self.drawPoint(self.dataMap.GPoint, GUIColor.Color.data['Orange'])
+        self.drawPoint(self.dataMap.SPoint, MyColor.data['Dark Red'])
+        self.drawPoint(self.dataMap.GPoint, MyColor.data['Dark Green'])
         self.display()
 
         previousDict, costDict = self.drawAStar(heuristic)
         # if have solution
         if self.dataMap.GPoint in previousDict:
-            self.drawSolutionPath(previousDict, GUIColor.Color.data['Aqua'])
+            self.drawSolutionPath(previousDict, MyColor.data['Blue'])
 
         # Keep window stay open
         running = True
