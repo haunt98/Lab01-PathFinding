@@ -2,6 +2,7 @@
 import pygame
 import GUIColor
 
+import queue
 import PathProblem
 
 
@@ -41,7 +42,7 @@ class GUIFindPath:
     # update screen with delay time
     def display(self):
         pygame.display.flip()
-        self.clock.tick(5)
+        self.clock.tick(2)
 
     # p is tuple (row, col)
     def drawPoint(self, p, color):
@@ -51,12 +52,8 @@ class GUIFindPath:
              (self.margin_size + self.p_size) * p[1] + self.margin_size,
              self.p_size, self.p_size])
 
-    def drawAStar(self):
-        # bai toan khong hop le thi khong chay
-        if not self.valid:
-            return
-
-        # draw o trong va vat can
+    # draw o trong va vat can
+    def drawOTrongVatCan(self):
         for row in range(self.dataMap.size):
             for col in range(self.dataMap.size):
                 # mac dinh la o trong
@@ -69,11 +66,76 @@ class GUIFindPath:
                 # to mau
                 self.drawPoint((row, col), color)
 
-        # draw SPoint, GPoint
+    # clone AStar
+    def drawAStar(self, heuristic):
+        # init with SPoint
+        # costDict store cost of point we have so far
+        # previousDict store previous of point we have so far
+        costDict = {self.dataMap.SPoint: 0}
+        previousDict = {self.dataMap.SPoint: None}
+
+        # PriorityQueue with heuristic
+        # PriorityQueue put tuple (priority, point position)
+        openList = queue.PriorityQueue()
+        openList.put((0, self.dataMap.SPoint))
+
+        while not openList.empty():
+            cur = openList.get()
+
+            # cur is tuple (priority, point position)
+            # cur[1] is point position
+            if PathProblem.samePosition(cur[1], self.dataMap.GPoint):
+                break
+
+            # np is next point
+            for np in self.dataMap.nextList(cur[1]):
+                np_cost = costDict[cur[1]] + 1
+                np_previous = cur[1]
+
+                # next point is new point => add
+                # next point has lower cost => replace
+                if np not in costDict or np_cost < costDict[np]:
+                    costDict[np] = np_cost
+                    previousDict[np] = np_previous
+
+                    np_priority = np_cost + heuristic(np, self.dataMap.GPoint)
+                    openList.put((np_priority, np))
+
+                    self.drawPoint(np, GUIColor.Color.data['Yellow'])
+
+            self.display()
+
+        return previousDict, costDict
+
+    # clone getSolutionPath, include SPoint and GPoint
+    def drawSolutionPath(self, previousDict, color):
+        self.drawPoint(self.dataMap.GPoint, color)
+        self.display()
+
+        p = previousDict[self.dataMap.GPoint]
+        # if p == None => SPoint and GPoint is same position
+        while p != None and previousDict[p] != None:
+            self.drawPoint(p, color)
+            self.display()
+            p = previousDict[p]
+
+        self.drawPoint(self.dataMap.SPoint, color)
+        self.display()
+
+    def draw(self, heuristic):
+        # bai toan khong hop le thi khong chay
+        if not self.valid:
+            return
+
+        self.drawOTrongVatCan()
         self.drawPoint(self.dataMap.SPoint, GUIColor.Color.data['Red'])
         self.drawPoint(self.dataMap.GPoint, GUIColor.Color.data['Orange'])
-
         self.display()
+
+        previousDict, costDict = self.drawAStar(heuristic)
+        # if have solution
+        if self.dataMap.GPoint in previousDict:
+            self.drawSolutionPath(previousDict, GUIColor.Color.data['Aqua'])
 
         # Keep window stay open
         running = True

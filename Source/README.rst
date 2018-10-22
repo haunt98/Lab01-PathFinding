@@ -34,7 +34,12 @@ GUIDraw.py
 
 Chứa hàm vẽ AStar
 
-GUITesting
-==========
+GUITesting.py
+============
 
 Tạo một bộ random và chạy thử bằng GUI
+
+Heuristic.py
+============
+
+Chứa định nghĩa hàm heuristic

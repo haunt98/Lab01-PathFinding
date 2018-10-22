@@ -1,5 +1,3 @@
-import math
-
 # for PriorityQueue
 import queue
 
@@ -88,12 +86,6 @@ class DataMap:
         return nlist
 
 
-def EuclidDistance(p, q):
-    dx = q[0] - p[0]
-    dy = q[1] - p[1]
-    return math.floor(math.sqrt(dx * dx + dy * dy))
-
-
 def samePosition(p, q):
     return p[0] == q[0] and p[1] == q[1]
 
@@ -162,7 +154,8 @@ class FindPath:
         path = []
 
         p = previousDict[self.dataMap.GPoint]
-        while previousDict[p] != None:
+        # if p == None => SPoint and GPoint is same position
+        while p != None and previousDict[p] != None:
             path.insert(0, p)
             p = previousDict[p]
 

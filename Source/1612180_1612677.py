@@ -2,6 +2,7 @@
 import sys
 
 import PathProblem
+import Heuristic
 
 
 def main():
@@ -11,7 +12,7 @@ def main():
 
     findPath = PathProblem.FindPath(sys.argv[1], 'log.txt')
     findPath.writeSolution(sys.argv[2], findPath.AStar,
-                           PathProblem.EuclidDistance)
+                           Heuristic.EuclidDistance)
 
 
 if __name__ == '__main__':
