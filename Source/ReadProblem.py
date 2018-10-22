@@ -69,7 +69,7 @@ class DataMap:
     def nextList(self, p):
         row = p[0]
         col = p[1]
-        temp = [(row - 1, col - 1), (row - 1, col), (row - 1, col),
+        temp = [(row - 1, col - 1), (row - 1, col), (row - 1, col + 1),
                 (row, col + 1), (row + 1, col + 1), (row + 1, col),
                 (row + 1, col - 1), (row, col - 1)]
         nlist = []

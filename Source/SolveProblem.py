@@ -39,10 +39,10 @@ class Pathfinding:
         openList.put((0, self.dataMap.SPoint))
 
         while not openList.empty():
-            cur = openList.get()
-
             # cur is tuple (priority, point position)
             # cur[1] is point position
+            cur = openList.get()
+
             if ReadProblem.samePosition(cur[1], self.dataMap.GPoint):
                 break
 

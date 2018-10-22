@@ -65,8 +65,8 @@ class GUIFindPath:
     def drawPoint(self, p, color):
         pygame.draw.rect(
             self.screen, color,
-            [(self.margin_size + self.p_size) * p[0] + self.margin_size,
-             (self.margin_size + self.p_size) * p[1] + self.margin_size,
+            [(self.margin_size + self.p_size) * p[1] + self.margin_size,
+             (self.margin_size + self.p_size) * p[0] + self.margin_size,
              self.p_size, self.p_size])
 
     # draw o trong va vat can
@@ -97,10 +97,10 @@ class GUIFindPath:
         openList.put((0, self.dataMap.SPoint))
 
         while not openList.empty():
-            cur = openList.get()
-
             # cur is tuple (priority, point position)
             # cur[1] is point position
+            cur = openList.get()
+
             if ReadProblem.samePosition(cur[1], self.dataMap.GPoint):
                 break
 
