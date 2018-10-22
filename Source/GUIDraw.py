@@ -1,7 +1,9 @@
 # for GUI
 import pygame
 
+# for PriorityQueue
 import queue
+
 import ReadProblem
 
 
