@@ -115,8 +115,13 @@ class Pathfinding:
                     arr[i][j] = 'o'
         for p in path:
             arr[p[0]][p[1]] = 'x'
-        arr[self.dataMap.SPoint[0]][self.dataMap.SPoint[1]] = 'S'
-        arr[self.dataMap.GPoint[0]][self.dataMap.GPoint[1]] = 'G'
+
+        if (ReadProblem.samePosition(self.dataMap.SPoint,
+                                     self.dataMap.GPoint)):
+            arr[self.dataMap.SPoint[0]][self.dataMap.SPoint[1]] = 'S/G'
+        else:
+            arr[self.dataMap.SPoint[0]][self.dataMap.SPoint[1]] = 'S'
+            arr[self.dataMap.GPoint[0]][self.dataMap.GPoint[1]] = 'G'
 
         for row in arr:
             for col in row:
