@@ -80,7 +80,3 @@ class DataMap:
                 nlist.append(np)
 
         return nlist
-
-
-def samePosition(p, q):
-    return p[0] == q[0] and p[1] == q[1]

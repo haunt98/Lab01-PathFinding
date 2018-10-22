@@ -43,12 +43,15 @@ class Pathfinding:
             # cur[1] is point position
             cur = openList.get()
 
-            if ReadProblem.samePosition(cur[1], self.dataMap.GPoint):
+            # found goal
+            if cur[1] == self.dataMap.GPoint:
                 break
 
             # np is next point
             for np in self.dataMap.nextList(cur[1]):
+                # every single move cost 1
                 np_cost = costDict[cur[1]] + 1
+                # previous of np is cur[1]
                 np_previous = cur[1]
 
                 # next point is new point => add
@@ -68,7 +71,7 @@ class Pathfinding:
         path = []
 
         p = previousDict[self.dataMap.GPoint]
-        # if p == None => SPoint and GPoint is same position
+        # if p == None => SPoint == GPoint
         while p != None and previousDict[p] != None:
             path.insert(0, p)
             p = previousDict[p]
@@ -116,8 +119,7 @@ class Pathfinding:
         for p in path:
             arr[p[0]][p[1]] = 'x'
 
-        if (ReadProblem.samePosition(self.dataMap.SPoint,
-                                     self.dataMap.GPoint)):
+        if self.dataMap.SPoint == self.dataMap.GPoint:
             arr[self.dataMap.SPoint[0]][self.dataMap.SPoint[1]] = 'S/G'
         else:
             arr[self.dataMap.SPoint[0]][self.dataMap.SPoint[1]] = 'S'

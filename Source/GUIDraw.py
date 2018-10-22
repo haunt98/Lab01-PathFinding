@@ -101,12 +101,15 @@ class GUIFindPath:
             # cur[1] is point position
             cur = openList.get()
 
-            if ReadProblem.samePosition(cur[1], self.dataMap.GPoint):
+            # found goal
+            if cur[1] == self.dataMap.GPoint:
                 break
 
             # np is next point
             for np in self.dataMap.nextList(cur[1]):
+                # every single move cost 1
                 np_cost = costDict[cur[1]] + 1
+                # previous of np is cur[1]
                 np_previous = cur[1]
 
                 # next point is new point => add
@@ -130,7 +133,7 @@ class GUIFindPath:
         self.display()
 
         p = previousDict[self.dataMap.GPoint]
-        # if p == None => SPoint and GPoint is same position
+        # if p == None => SPoint == GPoint
         while p != None and previousDict[p] != None:
             self.drawPoint(p, color)
             self.display()
