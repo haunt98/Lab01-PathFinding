@@ -19,8 +19,8 @@ class DataMap:
         self.arr = []
         for line in f_in:
             row = []
-            for word in line.split():
-                row.append(str(word))
+            for col in line.split():
+                row.append(str(col))
             self.arr.append(row)
 
         # Viet log khi doc file bi loi
@@ -118,7 +118,7 @@ class FindPath:
     def AStar(self, heuristic):
         # bai toan khong hop le thi khong chay
         # tra ve 2 empty dict
-        if self.valid == False:
+        if not self.valid:
             return {}, {}
 
         # init with SPoint
@@ -212,8 +212,8 @@ class FindPath:
         arr[self.dataMap.GPoint[0]][self.dataMap.GPoint[1]] = 'G'
 
         for row in arr:
-            for word in row:
-                f_out.write(word + ' ')
+            for col in row:
+                f_out.write(col + ' ')
             f_out.write('\n')
 
         f_out.close()

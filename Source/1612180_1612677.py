@@ -3,10 +3,6 @@ import sys
 
 import PathProblem
 
-# for GUI
-import pygame
-import GUIColor
-
 
 def main():
     if len(sys.argv) != 3:
