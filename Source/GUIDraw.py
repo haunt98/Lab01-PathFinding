@@ -128,7 +128,7 @@ class GUIAStar:
 
         p = previousDict[self.dataMap.GPoint]
         # if p == None => SPoint == GPoint
-        while p != None and previousDict[p] != None:
+        while p != None and p in previousDict and previousDict[p] != None:
             self.drawPoint(p, color)
             self.display()
             p = previousDict[p]

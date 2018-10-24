@@ -6,8 +6,25 @@ import ReadProblem
 # for ARA
 import ARADataStructure
 
+# for limit time
+import time
+
 # for inf
 import math
+
+
+# path is point between SPoint and GPoint
+# not include SPoint and GPoint
+def getSolutionPath(GPoint, previousDict):
+    path = []
+
+    p = previousDict[GPoint]
+    # if p == None => SPoint == GPoint
+    while p != None and p in previousDict and previousDict[p] != None:
+        path.insert(0, p)
+        p = previousDict[p]
+
+    return path
 
 
 # only need map, cost of goal and path
@@ -116,19 +133,6 @@ class AStar:
 
         return previousDict, costDict
 
-    # path is point between SPoint and GPoint
-    # not include SPoint and GPoint
-    def getSolutionPath(self, previousDict):
-        path = []
-
-        p = previousDict[self.dataMap.GPoint]
-        # if p == None => SPoint == GPoint
-        while p != None and previousDict[p] != None:
-            path.insert(0, p)
-            p = previousDict[p]
-
-        return path
-
     # heuristic la mot ham truyen vao
     def writeSolution(self, name_out, heuristic):
         previousDict, costDict = self.Solve(heuristic)
@@ -139,7 +143,7 @@ class AStar:
 
         # co solution
         costGoal = costDict[self.dataMap.GPoint]
-        path = self.getSolutionPath(previousDict)
+        path = getSolutionPath(self.dataMap.GPoint, previousDict)
         writeSolutionToFile(name_out, self.dataMap, costGoal, path)
 
 
@@ -147,8 +151,9 @@ class AStar:
 # only God understand
 # but God left
 # we human, we made mistake
+# dont try to understand, bro :(
 class ARA:
-    def __init__(self, name_in, name_log, weight, heuristic):
+    def __init__(self, name_in, name_log, weight, heuristic, timeLimit):
         # doc bai toan tu file
         self.dataMap = ReadProblem.DataMap(name_in, name_log)
 
@@ -158,11 +163,16 @@ class ARA:
 
         # what is weight mean
         # it is magic
+        # 0.5 because paper decrese 0.5 each time
         self.weight = weight
         self.weight_decrease = 0.5
 
         self.heuristic = heuristic
         self.costDict = {}
+        self.previousDict = {}
+
+        # limit time when run ARA
+        self.timeLimit = timeLimit
 
     def fvalue(self, p):
         return self.costDict[p] + self.weight * self.heuristic(
@@ -183,6 +193,8 @@ class ARA:
                 # if ns has better cost
                 if self.costDict[ns] > self.costDict[s] + 1:
                     self.costDict[ns] = self.costDict[s] + 1
+                    self.previousDict[ns] = s
+
                     if ns not in self.closeList:
                         self.openList.add(self.fvalue(ns), ns)
                     else:
@@ -212,15 +224,23 @@ class ARA:
             return
         # OPEN empty, INCO not
         elif self.openList.empty:
-            self.weight = min(self.weight, self.minfvalueInco())
+            self.weight = min(
+                self.weight,
+                self.costDict[self.dataMap.GPoint] / self.minfvalueInco())
         # INCO empty, OPEN not
         elif not self.incoList:
-            self.weight = min(self.weight, self.minfvalueOpen())
+            self.weight = min(
+                self.weight,
+                self.costDict[self.dataMap.GPoint] / self.minfvalueOpen())
         else:
-            self.weight = min(self.weight, self.minfvalueOpen(),
-                              self.minfvalueInco())
+            self.weight = min(
+                self.weight,
+                self.costDict[self.dataMap.GPoint] / self.minfvalueOpen(),
+                self.costDict[self.dataMap.GPoint] / self.minfvalueInco())
 
     def Solve(self):
+        timeStart = time.perf_counter()
+
         self.costDict[self.dataMap.GPoint] = math.inf
         self.costDict[self.dataMap.SPoint] = 0
         self.openList.add(
@@ -229,7 +249,8 @@ class ARA:
         self.ImprovePath()
         self.minWeight()
 
-        while self.weight > 1:
+        while self.weight > 1 and time.perf_counter(
+        ) - timeStart < self.timeLimit:
             self.weight -= self.weight_decrease
 
             # Move states from INCONS into OPEN;
@@ -246,3 +267,18 @@ class ARA:
 
             self.ImprovePath()
             self.minWeight()
+
+    def writeSolution(self, name_out):
+        self.Solve()
+
+        # khong co solution
+        if self.dataMap.GPoint not in self.previousDict:
+            writeSolutionToFile(name_out, None, None, None, noSolution=True)
+            return
+
+        # co solution
+        path = getSolutionPath(self.dataMap.GPoint, self.previousDict)
+        costGoal = self.costDict[self.dataMap.GPoint]
+        writeSolutionToFile(name_out, self.dataMap, costGoal, path)
+
+        print()
