@@ -1,6 +1,8 @@
 class DataMap:
     # Luu size, SPoint, GPoint, arr
-    def __init__(self, f_in, f_log):
+    def __init__(self, name_in, name_log):
+        f_in = open(name_in, 'r')
+
         self.size = int(f_in.readline())
 
         # Lay vi tri SPoint, GPoint
@@ -18,37 +20,44 @@ class DataMap:
             self.arr.append(row)
 
         # Viet log khi doc file bi loi
-        self.f_log = f_log
+        self.name_log = name_log
+
+        # su dung mot bien de luu hop le
+        # khong can phai kiem tra lai
+        self.valid = True
+        self.checkValid()
+
+        f_in.close()
 
     # Kiem tra file input co hop le hay khong
     def checkValid(self):
-        valid = True
+        f_log = open(self.name_log, 'w')
 
         if len(self.arr) != self.size:
-            self.f_log.write('number of row != size\n')
-            valid = False
+            f_log.write('number of row != size\n')
+            self.valid = False
         for i in range(len(self.arr)):
             if len(self.arr[i]) != self.size:
                 self.f_log.write('len of row ' + i + ' != size\n')
                 valid = False
 
         if not self.isInside(self.SPoint):
-            self.f_log.write('SPoint not inside map\n')
-            valid = False
+            f_log.write('SPoint not inside map\n')
+            self.valid = False
 
         if self.isObstacle(self.SPoint):
-            self.f_log.write('SPoint is obstacle\n')
-            valid = False
+            f_log.write('SPoint is obstacle\n')
+            self.valid = False
 
         if not self.isInside(self.GPoint):
-            self.f_log.write('GPoint not inside map\n')
-            valid = False
+            f_log.write('GPoint not inside map\n')
+            self.valid = False
 
         if self.isObstacle(self.GPoint):
-            self.f_log.write('GPoint is obstacle\n')
-            valid = False
+            f_log.write('GPoint is obstacle\n')
+            self.valid = False
 
-        return valid
+        f_log.close()
 
     def isInside(self, p):
         if p[0] >= 0 and p[0] < self.size and p[1] >= 0 and p[1] < self.size:

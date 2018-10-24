@@ -3,28 +3,82 @@ import queue
 
 import ReadProblem
 
+# for ARA
+import ARAQueue
 
-class Pathfinding:
+# for inf
+import math
+
+# the code below is a mess
+# only God understand
+# but God left
+
+
+# only need map, cost of goal and path
+# to write solution to file
+def writeSolutionToFile(name_out, dataMap, costGoal, path, noSolution=False):
+    f_out = open(name_out, 'w')
+    if noSolution:
+        f_out.write('-1\n')
+        f_out.close()
+        return
+
+    # write cost
+    f_out.write(str(costGoal) + '\n')
+
+    # write path, include SPoint and GPoint
+    f_out.write('(' + str(dataMap.SPoint[0]) + ',' + str(dataMap.SPoint[1]) +
+                ') ')
+    for p in path:
+        f_out.write('(' + str(p[0]) + ',' + str(p[1]) + ') ')
+    f_out.write('(' + str(dataMap.GPoint[0]) + ',' + str(dataMap.GPoint[1]) +
+                ')\n')
+
+    # write map
+    arr = []
+    for row in dataMap.arr:
+        arr.append(row)
+
+    # 'S' SPoint
+    # 'G' GPoint
+    # '-' o trong
+    # 'o' vat can
+    # 'x' duong di
+    for i in range(len(arr)):
+        for j in range(len(arr[i])):
+            if arr[i][j] == '0':
+                arr[i][j] = '-'
+            elif arr[i][j] == '1':
+                arr[i][j] = 'o'
+    for p in path:
+        arr[p[0]][p[1]] = 'x'
+
+    if dataMap.SPoint == dataMap.GPoint:
+        arr[dataMap.SPoint[0]][dataMap.SPoint[1]] = 'S/G'
+    else:
+        arr[dataMap.SPoint[0]][dataMap.SPoint[1]] = 'S'
+        arr[dataMap.GPoint[0]][dataMap.GPoint[1]] = 'G'
+
+    for row in arr:
+        for col in row:
+            f_out.write(col + ' ')
+        f_out.write('\n')
+
+    f_out.close()
+
+
+class AStar:
     def __init__(self, name_in, name_log):
-        f_in = open(name_in, 'r')
-        f_log = open(name_log, 'w')
-
         # doc bai toan tu file
-        self.dataMap = ReadProblem.DataMap(f_in, f_log)
-
-        # tinh hop le cua bai toan
-        self.valid = self.dataMap.checkValid()
-
-        f_in.close()
-        f_log.close()
+        self.dataMap = ReadProblem.DataMap(name_in, name_log)
 
     # https://www.redblobgames.com/pathfinding/a-star/implementation.html
     # heuristic la mot ham truyen vao
     # tra ve previousDict, costDict
-    def AStar(self, heuristic):
+    def Solve(self, heuristic):
         # bai toan khong hop le thi khong chay
         # tra ve 2 empty dict
-        if not self.valid:
+        if not self.dataMap.valid:
             return {}, {}
 
         # init with SPoint
@@ -36,7 +90,8 @@ class Pathfinding:
         # PriorityQueue with heuristic
         # PriorityQueue put tuple (priority, point position)
         openList = queue.PriorityQueue()
-        openList.put((0, self.dataMap.SPoint))
+        openList.put((heuristic(self.dataMap.SPoint, self.dataMap.GPoint),
+                      self.dataMap.SPoint))
 
         while not openList.empty():
             # cur is tuple (priority, point position)
@@ -79,55 +134,16 @@ class Pathfinding:
         return path
 
     # algo, heuristic la mot ham truyen vao
-    def writeSolution(self, name_out, algo, heuristic):
-        f_out = open(name_out, 'w')
+    def writeSolution(self, name_out, heuristic):
+        #f_out = open(name_out, 'w')
 
-        previousDict, costDict = algo(heuristic)
+        previousDict, costDict = self.Solve(heuristic)
         if self.dataMap.GPoint not in previousDict:
-            f_out.write('-1\n')
-            f_out.close()
+            #f_out.write('-1\n')
+            #f_out.close()
+            writeSolutionToFile(name_out, None, None, None, noSolution=True)
             return
 
-        # write cost
-        f_out.write(str(costDict[self.dataMap.GPoint]) + '\n')
-
-        # write path, include SPoint and GPoint
-        f_out.write('(' + str(self.dataMap.SPoint[0]) + ',' +
-                    str(self.dataMap.SPoint[1]) + ') ')
+        costGoal = costDict[self.dataMap.GPoint]
         path = self.getSolutionPath(previousDict)
-        for p in path:
-            f_out.write('(' + str(p[0]) + ',' + str(p[1]) + ') ')
-        f_out.write('(' + str(self.dataMap.GPoint[0]) + ',' +
-                    str(self.dataMap.GPoint[1]) + ')\n')
-
-        # write map
-        arr = []
-        for row in self.dataMap.arr:
-            arr.append(row)
-
-        # 'S' SPoint
-        # 'G' GPoint
-        # '-' o trong
-        # 'o' vat can
-        # 'x' duong di
-        for i in range(len(arr)):
-            for j in range(len(arr[i])):
-                if arr[i][j] == '0':
-                    arr[i][j] = '-'
-                elif arr[i][j] == '1':
-                    arr[i][j] = 'o'
-        for p in path:
-            arr[p[0]][p[1]] = 'x'
-
-        if self.dataMap.SPoint == self.dataMap.GPoint:
-            arr[self.dataMap.SPoint[0]][self.dataMap.SPoint[1]] = 'S/G'
-        else:
-            arr[self.dataMap.SPoint[0]][self.dataMap.SPoint[1]] = 'S'
-            arr[self.dataMap.GPoint[0]][self.dataMap.GPoint[1]] = 'G'
-
-        for row in arr:
-            for col in row:
-                f_out.write(col + ' ')
-            f_out.write('\n')
-
-        f_out.close()
+        writeSolutionToFile(name_out, self.dataMap, costGoal, path)

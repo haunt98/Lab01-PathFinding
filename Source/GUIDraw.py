@@ -25,19 +25,10 @@ class MyColor:
     }
 
 
-class GUIFindPath:
+class GUIAStar:
     def __init__(self, name_in, name_log):
-        f_in = open(name_in, 'r')
-        f_log = open(name_log, 'w')
-
         # doc bai toan tu file
-        self.dataMap = ReadProblem.DataMap(f_in, f_log)
-
-        # tinh hop le cua bai toan
-        self.valid = self.dataMap.checkValid()
-
-        f_in.close()
-        f_log.close()
+        self.dataMap = ReadProblem.DataMap(name_in, name_log)
 
         # kich thuoc cua cua so hien ra
         self.win_size = 512
@@ -61,7 +52,7 @@ class GUIFindPath:
     # update screen with delay time
     def display(self):
         pygame.display.flip()
-        self.clock.tick(2)
+        self.clock.tick(5)
 
     # p is tuple (row, col)
     def drawPoint(self, p, color):
@@ -85,7 +76,7 @@ class GUIFindPath:
                 # to mau
                 self.drawPoint((row, col), color)
 
-    # clone AStar
+    # clone AStar.Solve
     def drawAStar(self, heuristic):
         # init with SPoint
         # costDict store cost of point we have so far
@@ -96,7 +87,8 @@ class GUIFindPath:
         # PriorityQueue with heuristic
         # PriorityQueue put tuple (priority, point position)
         openList = queue.PriorityQueue()
-        openList.put((0, self.dataMap.SPoint))
+        openList.put((heuristic(self.dataMap.SPoint, self.dataMap.GPoint),
+                      self.dataMap.SPoint))
 
         while not openList.empty():
             # cur is tuple (priority, point position)
@@ -146,7 +138,7 @@ class GUIFindPath:
 
     def draw(self, heuristic):
         # bai toan khong hop le thi khong chay
-        if not self.valid:
+        if not self.dataMap.valid:
             return
 
         self.drawOTrongVatCan()

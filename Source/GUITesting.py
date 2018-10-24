@@ -4,8 +4,8 @@ import GUIDraw
 
 
 def main():
-    RandomProblem.createRandomProblem('rand_in.txt', 8, 16)
-    g = GUIDraw.GUIFindPath('rand_in.txt', 'rand_log.txt')
+    RandomProblem.createRandomProblem('rand_in.txt', 12, 24)
+    g = GUIDraw.GUIAStar('rand_in.txt', 'rand_log.txt')
     g.draw(Heuristic.EuclidDistance)
 
 
