@@ -4,14 +4,10 @@ import queue
 import ReadProblem
 
 # for ARA
-import ARAQueue
+import ARADataStructure
 
 # for inf
 import math
-
-# the code below is a mess
-# only God understand
-# but God left
 
 
 # only need map, cost of goal and path
@@ -133,17 +129,120 @@ class AStar:
 
         return path
 
-    # algo, heuristic la mot ham truyen vao
+    # heuristic la mot ham truyen vao
     def writeSolution(self, name_out, heuristic):
-        #f_out = open(name_out, 'w')
-
         previousDict, costDict = self.Solve(heuristic)
+        # khong co solution
         if self.dataMap.GPoint not in previousDict:
-            #f_out.write('-1\n')
-            #f_out.close()
             writeSolutionToFile(name_out, None, None, None, noSolution=True)
             return
 
+        # co solution
         costGoal = costDict[self.dataMap.GPoint]
         path = self.getSolutionPath(previousDict)
         writeSolutionToFile(name_out, self.dataMap, costGoal, path)
+
+
+# the code below is a mess
+# only God understand
+# but God left
+# we human, we made mistake
+class ARA:
+    def __init__(self, name_in, name_log, weight, heuristic):
+        # doc bai toan tu file
+        self.dataMap = ReadProblem.DataMap(name_in, name_log)
+
+        self.openList = ARADataStructure.ARAPriorityQueue()
+        self.closeList = []
+        self.incoList = []
+
+        # what is weight mean
+        # it is magic
+        self.weight = weight
+        self.weight_decrease = 0.5
+
+        self.heuristic = heuristic
+        self.costDict = {}
+
+    def fvalue(self, p):
+        return self.costDict[p] + self.weight * self.heuristic(
+            p, self.dataMap.GPoint)
+
+    def ImprovePath(self):
+        while not self.openList.empty() and self.fvalue(
+                self.dataMap.GPoint) > self.minfvalueOpen():
+            s = self.openList.remove()
+            if s not in self.closeList:
+                self.closeList.append(s)
+
+            # successor ns of s
+            for ns in self.dataMap.nextList(s):
+                # ns not visited before
+                if ns not in self.costDict:
+                    self.costDict[ns] = math.inf
+                # if ns has better cost
+                if self.costDict[ns] > self.costDict[s] + 1:
+                    self.costDict[ns] = self.costDict[s] + 1
+                    if ns not in self.closeList:
+                        self.openList.add(self.fvalue(ns), ns)
+                    else:
+                        self.incoList.append(ns)
+
+    def minfvalueOpen(self):
+        arr_temp = []
+
+        # p is (priority, point_position)
+        # p[1] is point_position
+        for p in self.openList.arr:
+            arr_temp.append(self.fvalue(p[1]))
+
+        return min(arr_temp)
+
+    def minfvalueInco(self):
+        arr_temp = []
+
+        for p in self.incoList:
+            arr_temp.append(self.fvalue(p))
+
+        return min(arr_temp)
+
+    def minWeight(self):
+        # OPEN and INCO is empty
+        if self.openList.empty and not self.incoList:
+            return
+        # OPEN empty, INCO not
+        elif self.openList.empty:
+            self.weight = min(self.weight, self.minfvalueInco())
+        # INCO empty, OPEN not
+        elif not self.incoList:
+            self.weight = min(self.weight, self.minfvalueOpen())
+        else:
+            self.weight = min(self.weight, self.minfvalueOpen(),
+                              self.minfvalueInco())
+
+    def Solve(self):
+        self.costDict[self.dataMap.GPoint] = math.inf
+        self.costDict[self.dataMap.SPoint] = 0
+        self.openList.add(
+            self.fvalue(self.dataMap.SPoint), self.dataMap.SPoint)
+
+        self.ImprovePath()
+        self.minWeight()
+
+        while self.weight > 1:
+            self.weight -= self.weight_decrease
+
+            # Move states from INCONS into OPEN;
+            # Update the priorities for all s in OPEN according to fvalue(s);
+            # do that by remove all OPEN list, then re-add
+            temp = self.incoList.copy()
+            while not self.openList.empty():
+                temp.append(self.openList.remove())
+            for p in temp:
+                self.openList.add(self.fvalue(p), p)
+
+            # reset CLOSE
+            self.closeList.clear()
+
+            self.ImprovePath()
+            self.minWeight()

@@ -142,7 +142,7 @@ class GUIAStar:
             return
 
         self.drawOTrongVatCan()
-        self.drawPoint(self.dataMap.SPoint, MyColor.data['Dark Red'])
+        self.drawPoint(self.dataMap.SPoint, MyColor.data['Red'])
         self.drawPoint(self.dataMap.GPoint, MyColor.data['Dark Green'])
         self.display()
 
