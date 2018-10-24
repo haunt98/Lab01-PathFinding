@@ -17,7 +17,7 @@ Chứa hàm đọc bài toán từ file
 SolveProblem.py
 ==============
 
-Chứa hàm giải quyết bài toán
+Chứa thuật toán A*, ARA
 
 RandomProblem.py
 ================
@@ -27,13 +27,23 @@ Chứa hàm tạo một bài toán random và lưu vào file
 CLITesting.py
 =============
 
-Tự tạo một bài toán random rồi xử lý
+Tự tạo một bài toán random rồi xử lý bằng A*
 
+
+ARADataStructure.py
+===================
+
+Chứa PriorityQueue sử dụng cho ARA
+
+ARATesting.py
+=============
+
+Tự tạo một bài toán random rồi xử lý bằng ARA
 
 GUIDraw.py
 ==========
 
-Chứa hàm định nghĩa màu sắc và hàm vẽ AStar
+Chứa hàm định nghĩa màu sắc và hàm vẽ A*
 
 GUITesting.py
 ============
