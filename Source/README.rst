@@ -54,3 +54,8 @@ Heuristic.py
 ============
 
 Chứa hàm heuristic
+
+HeuristicTesting.py
+===================
+
+Tự tạo một bài toán random rồi xử lý bằng A* với Heuristic tự đề xuất
