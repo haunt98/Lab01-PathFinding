@@ -172,13 +172,14 @@ class ARA:
         self.previousDict = {}
 
         # limit time when run ARA
-        # timeLimit don vi la giay
+        # timeLimit don vi la milisec
         self.timeLimit = timeLimit
 
     def fvalue(self, p):
         return self.costDict[p] + self.weight * self.heuristic(
             p, self.dataMap.GPoint)
 
+    # giong A*, them incoList
     def ImprovePath(self):
         while not self.openList.empty() and self.fvalue(
                 self.dataMap.GPoint) > self.minfvalueOpen():
@@ -240,7 +241,7 @@ class ARA:
                 self.costDict[self.dataMap.GPoint] / self.minfvalueInco())
 
     def Solve(self):
-        timeStart = time.perf_counter()
+        timeStart = time.time()
 
         self.costDict[self.dataMap.GPoint] = math.inf
         self.costDict[self.dataMap.SPoint] = 0
@@ -250,7 +251,9 @@ class ARA:
         self.ImprovePath()
         self.minWeight()
 
-        while self.weight > 1 and time.perf_counter(
+        # self.weight = 1, tro thanh A*
+        # kiem tra khong vuot qua thoi gian quy dinh
+        while self.weight > 1 and time.time(
         ) - timeStart < self.timeLimit / 1000:
             self.weight -= self.weight_decrease
 
