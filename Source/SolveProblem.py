@@ -281,5 +281,3 @@ class ARA:
         path = getSolutionPath(self.dataMap.GPoint, self.previousDict)
         costGoal = self.costDict[self.dataMap.GPoint]
         writeSolutionToFile(name_out, self.dataMap, costGoal, path)
-
-        print()
