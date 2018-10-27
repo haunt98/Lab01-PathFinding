@@ -10,11 +10,11 @@ def main():
     if len(sys.argv) != 3:
         RandomProblem.createRandomProblem('rand_in.txt', 8, 16)
         pf = SolveProblem.ARA('rand_in.txt', 'rand_log.txt', 3,
-                              Heuristic.EuclidDistance, 0.05)
+                              Heuristic.EuclidDistance, 5)
         pf.writeSolution('rand_out.txt')
     else:
         pf = SolveProblem.ARA(sys.argv[1], 'ARA_log.txt', 3,
-                              Heuristic.EuclidDistance, 0.05)
+                              Heuristic.EuclidDistance, 5)
         pf.writeSolution(sys.argv[2])
 
 

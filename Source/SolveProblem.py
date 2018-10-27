@@ -172,6 +172,7 @@ class ARA:
         self.previousDict = {}
 
         # limit time when run ARA
+        # timeLimit don vi la giay
         self.timeLimit = timeLimit
 
     def fvalue(self, p):
@@ -250,7 +251,7 @@ class ARA:
         self.minWeight()
 
         while self.weight > 1 and time.perf_counter(
-        ) - timeStart < self.timeLimit:
+        ) - timeStart < self.timeLimit / 1000:
             self.weight -= self.weight_decrease
 
             # Move states from INCONS into OPEN;
