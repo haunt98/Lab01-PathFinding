@@ -13,7 +13,7 @@ Contributor
 ===========
 
 `Nguyen Tran Hau
-<https://github.com/SummerSad>`_
+<https://github.com/1612180>`_
 
 `Nguyen Chi Thuc
-<https://github.com/chithuchcmus>`_
+<https://github.com/sv1612677>`_
